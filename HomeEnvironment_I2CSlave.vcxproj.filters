@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="HomeEnvironment_I2CSlave.ino" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.HomeEnvironment_I2CSlave.vsarduino.h">

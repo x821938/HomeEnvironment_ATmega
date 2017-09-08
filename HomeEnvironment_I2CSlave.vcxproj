@@ -82,6 +82,7 @@
     <None Include="HomeEnvironment_I2CSlave.ino">
       <FileType>CppCode</FileType>
     </None>
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DHTSensor.h" />
