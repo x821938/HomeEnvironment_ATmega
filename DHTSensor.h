@@ -1,26 +1,22 @@
 #ifndef _DHTSENSOR_h
 #define _DHTSENSOR_h
 
+#include "Timing.h"
+
 #define DHT_PIN 4
-#define DHT_UPDATE_FREQ 2500 // DHT22 can not be polled faster than this
 
-struct DHTSensorData {
-	float temperature;
-	float humidity;
-	bool temperatureOk;
-	bool humidityOk;
-};
 
-class DHTSensorClass
+class DHTSensor
 {
 	 protected:
-		 DHTSensorData dhtSensorData;
+		 bool isSetup = false;
+		 Timing sendTimer;
+
+		 void sendData();
 
 	 public:
-		DHTSensorClass();
-		void setup();
-		void update();
-		DHTSensorData getData();
+		 void setup( uint16_t measureFreq );
+		 void handle();
 };
 
 #endif

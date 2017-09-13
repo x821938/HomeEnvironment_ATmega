@@ -1,44 +1,40 @@
 #include "DHTSensor.h"
 #include "Logging.h"
+#include "SPImaster.h"
 #include "DHT.h"
-#include "Logging.h"
 
+extern SPImaster spi;
 DHT dht( DHT_PIN, DHT22 );
 
-DHTSensorClass::DHTSensorClass() {
-}
 
-void DHTSensorClass::setup() {
+void DHTSensor::setup( uint16_t measureFreq ) {
+	isSetup = true;
+	sendTimer.setup( (long) measureFreq * 1000 );
+
 	dht.begin();
-	dhtSensorData.temperatureOk = dhtSensorData.humidityOk = false;
-	dhtSensorData.temperature = dhtSensorData.humidity = NAN;
-	LOG_INFO( "DHT", "Sensor started" );
+	LOG_NOTICE( "DHT", "Sensor started" );
 }
 
-void DHTSensorClass::update() {
-	static long lastUpdated = millis();
-	if ( millis() - lastUpdated > DHT_UPDATE_FREQ ) {
-		dhtSensorData.humidity = dht.readHumidity();
-		dhtSensorData.temperature = dht.readTemperature();
-		lastUpdated = millis();
-	}
+
+void DHTSensor::handle() {
+	if ( isSetup && sendTimer.triggered() ) sendData();
 }
 
-DHTSensorData DHTSensorClass::getData() {
-	if ( isnan( dhtSensorData.temperature ) || dhtSensorData.temperature < -40 || dhtSensorData.temperature > 80 ) {
-		dhtSensorData.temperatureOk = false;
+
+void DHTSensor::sendData() {
+	float temperature = dht.readTemperature();
+	if ( isnan( temperature ) || temperature < -40 || temperature > 80 ) {
 		LOG_ERROR( "DHT", "Could not get sane temperature data" );
 	} else {
-		dhtSensorData.temperatureOk = true;
-		LOG_INFO( "DHT", "Temperature = " << dhtSensorData.temperature << " C" );
+		LOG_INFO( "DHT", "Temperature = " << temperature << " C" );
+		spi.send( 'T', &temperature, sizeof( temperature ) );
 	}
 
-	if ( isnan( dhtSensorData.humidity ) || dhtSensorData.humidity < 0 || dhtSensorData.humidity > 100 ) {
-		dhtSensorData.humidityOk = false;
+	float humidity = dht.readHumidity();
+	if ( isnan( humidity ) || humidity < 0 || humidity > 100 ) {
 		LOG_ERROR( "DHT", "Could not get sane humidity data" );
 	} else {
-		dhtSensorData.humidityOk = true;
-		LOG_INFO( "DHT", "Humidity = " << dhtSensorData.humidity << " %" );
+		LOG_INFO( "DHT", "Humidity = " << humidity << " %" );
+		spi.send( 'H', &humidity, sizeof( humidity ) );
 	}
-	return dhtSensorData;
 }

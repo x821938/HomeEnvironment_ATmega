@@ -1,7 +1,7 @@
 #ifndef _LOGGING_h
 #define _LOGGING_h
 
-#define LOGLEVEL 0
+#define LOGLEVEL 7
 #define LOG_TIME_FORMAT 2
 
 #include <Arduino.h>
