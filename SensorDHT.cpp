@@ -1,13 +1,13 @@
-#include "DHTSensor.h"
+#include "SensorDHT.h"
 #include "Logging.h"
-#include "SPImaster.h"
 #include "DHT.h"
+#include "I2C.h"
 
-extern SPImaster spi;
+extern I2C i2c;
 DHT dht( DHT_PIN, DHT22 );
 
 
-void DHTSensor::setup( uint16_t measureFreq ) {
+void SensorDHT::setup( uint16_t measureFreq ) {
 	isSetup = true;
 	sendTimer.setup( (long) measureFreq * 1000 );
 
@@ -16,18 +16,18 @@ void DHTSensor::setup( uint16_t measureFreq ) {
 }
 
 
-void DHTSensor::handle() {
+void SensorDHT::handle() {
 	if ( isSetup && sendTimer.triggered() ) sendData();
 }
 
 
-void DHTSensor::sendData() {
+void SensorDHT::sendData() {
 	float temperature = dht.readTemperature();
 	if ( isnan( temperature ) || temperature < -40 || temperature > 80 ) {
 		LOG_ERROR( "DHT", "Could not get sane temperature data" );
 	} else {
 		LOG_INFO( "DHT", "Temperature = " << temperature << " C" );
-		spi.send( 'T', &temperature, sizeof( temperature ) );
+		i2c.send( 'T', temperature );
 	}
 
 	float humidity = dht.readHumidity();
@@ -35,6 +35,6 @@ void DHTSensor::sendData() {
 		LOG_ERROR( "DHT", "Could not get sane humidity data" );
 	} else {
 		LOG_INFO( "DHT", "Humidity = " << humidity << " %" );
-		spi.send( 'H', &humidity, sizeof( humidity ) );
+		i2c.send( 'H', humidity );
 	}
 }

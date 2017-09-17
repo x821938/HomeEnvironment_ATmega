@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 
-#define MIN_TIME_BETWEEN_GLOBAL_TRIGGERS 300 // minimum time in ms between all triggers. makes sure that things are not sent out in bulk but spread a little
 
 class Timing {
 protected:
@@ -11,8 +10,6 @@ protected:
 	long lastTriggered;
 
 public:
-	static long globalLastTriggered;
-
 	void setup( long triggerFreq );
 	bool triggered();
 };

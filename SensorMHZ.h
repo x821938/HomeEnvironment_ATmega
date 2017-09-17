@@ -1,5 +1,5 @@
-#ifndef _MHZSENSOR_h
-#define _MHZSENSOR_h
+#ifndef _SENSORMHZ_h
+#define _SENSORMHZ_h
 
 #include "Timing.h"
 
@@ -8,7 +8,7 @@
 #define MHZ_WARMUP_TIME 180
 
 
-class MHZSensor
+class SensorMHZ
 {
  protected:
 	 bool isSetup = false;

@@ -1,5 +1,5 @@
-#ifndef _MICROPHONE_h
-#define _MICROPHONE_h
+#ifndef _SENSORMIC_h
+#define _SENSORMIC_h
 
 #include <Arduino.h>
 #include "Timing.h"
@@ -10,7 +10,7 @@
 #define HIGHEST_AMPLITUDE (1024 / 2)
 
 
-class MicrophoneClass
+class SensorMIC
 {
 	protected:
 		bool isSetup = false;

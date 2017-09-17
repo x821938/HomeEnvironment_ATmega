@@ -1,12 +1,12 @@
-#ifndef _DHTSENSOR_h
-#define _DHTSENSOR_h
+#ifndef _SENSORDHT_h
+#define _SENSORDHT_h
 
 #include "Timing.h"
 
 #define DHT_PIN 4
 
 
-class DHTSensor
+class SensorDHT
 {
 	 protected:
 		 bool isSetup = false;

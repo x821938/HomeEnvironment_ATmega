@@ -1,5 +1,5 @@
-#ifndef _DUSTSENSOR_h
-#define _DUSTSENSOR_h
+#ifndef _SENSORPPD_h
+#define _SENSORPPD_h
 
 #include "Timing.h"
 
@@ -8,7 +8,7 @@
 
 static volatile long lowDuration=0; // ISR stuff has to be global.
 
-class PPDSensor {
+class SensorPPD {
 	protected:
 		bool isSetup = false;
 		Timing sendTimer;

@@ -1,11 +1,11 @@
-#include "PPDSensor.h"
-#include "SPImaster.h"
+#include "SensorPPD.h"
 #include "Logging.h"
+#include "I2C.h"
 
-extern SPImaster spi;
+extern I2C i2c;
 
 
-void PPDSensor::setup( uint16_t measureFreq ) {
+void SensorPPD::setup( uint16_t measureFreq ) {
 	isSetup = true;
 	sendTimer.setup( (long)measureFreq * 1000 ); 
 
@@ -18,12 +18,12 @@ void PPDSensor::setup( uint16_t measureFreq ) {
 }
 
 
-void PPDSensor::handle() {
+void SensorPPD::handle() {
 	if ( isSetup && sendTimer.triggered() )	sendData();
 }
 
 
-void PPDSensor::particleCountIsr() {
+void SensorPPD::particleCountIsr() {
 	volatile static long goingLowAt = millis();
 	volatile static bool lastPinValue = true;
 
@@ -37,7 +37,7 @@ void PPDSensor::particleCountIsr() {
 }
 
 
-void PPDSensor::sendData() {
+void SensorPPD::sendData() {
 	sampleTime = millis() - samplingStartedAt;
 
 	float ratio = lowDuration / ( sampleTime*10.0 );  // Integer percentage 0=>100
@@ -48,6 +48,6 @@ void PPDSensor::sendData() {
 
 	lowDuration = 0;
 	
-	spi.send( 'D', &concentration, sizeof( concentration ) );
+	i2c.send( 'D', concentration );
 	samplingStartedAt = millis();
 }

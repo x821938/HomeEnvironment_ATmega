@@ -1,32 +1,32 @@
 #include "Logging.h"
-#include "MHZSensor.h"
-#include "SPImaster.h"
-#include "DHTSensor.h"
-#include "PPDSensor.h"
-#include "Microphone.h"
+#include "I2C.h"
+#include "SensorMHZ.h"
+#include "SensorDHT.h"
+#include "SensorPPD.h"
+#include "SensorMIC.h"
 
-SPImaster spi;
-MicrophoneClass microphone;
-DHTSensor dhtSensor;
-PPDSensor ppdSensor;
-MHZSensor mhzSensor;
+I2C i2c;
+SensorMIC sensorMIC;
+SensorDHT sensorDHT;
+SensorPPD sensorPPD;
+SensorMHZ sensorMHZ;
 
 
 void setup() {
 	Serial.begin( 115200 );
-	LOG_DEBUG( "SETUP", "Device booted, waiting 5 sec before sending data" );
-	delay( 5000 ); // Make sure master is booted before we start sending data to it.
+	LOG_DEBUG( "SETUP", "Device booted" );
 
-	microphone.setup( 5 );
-	dhtSensor.setup( 5 );
-	ppdSensor.setup( 300 );
-	mhzSensor.setup( 10 );
+	i2c.setup();
+	sensorMIC.setup( 5 );
+	sensorDHT.setup( 5 );
+	sensorPPD.setup( 300 );
+	sensorMHZ.setup( 10 );
 }
 
 
 void loop() {
-	ppdSensor.handle();
-	microphone.handle();
-	dhtSensor.handle();
-	mhzSensor.handle();
+	sensorPPD.handle();
+	sensorMIC.handle();
+	sensorDHT.handle();
+	sensorMHZ.handle();
 }

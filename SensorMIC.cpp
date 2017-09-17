@@ -1,11 +1,11 @@
-#include "Microphone.h"
+#include "SensorMIC.h"
 #include "Logging.h"
-#include "SPImaster.h"
+#include "I2C.h"
 
-extern SPImaster spi;
+extern I2C i2c;
 
 
-void MicrophoneClass::setup( uint16_t sampleTime ) {
+void SensorMIC::setup( uint16_t sampleTime ) {
 	isSetup = true;
 	sampleTimer.setup( (long)sampleTime * 1000 );
 
@@ -18,7 +18,7 @@ void MicrophoneClass::setup( uint16_t sampleTime ) {
 }
 
 
-void MicrophoneClass::handle() {
+void SensorMIC::handle() {
 	if ( isSetup ) {
 		// all samples must be taken right after each other, this is why nothing else can take place in the meantime
 		lastMeasured = millis();
@@ -27,12 +27,11 @@ void MicrophoneClass::handle() {
 			sampleOnce();
 		}
 		sendData();
-		delay( MIN_TIME_BETWEEN_GLOBAL_TRIGGERS ); // givup the timeslot so other sensors get a chance
 	}
 }
 
 
-void MicrophoneClass::sampleOnce() {
+void SensorMIC::sampleOnce() {
 	// Hardware read A0, bitbanging for faster read that ReadAnalog
 	while ( !( ADCSRA & /*0x10*/_BV( ADIF ) ) ); // wait for adc to be ready (ADIF)
 	sbi( ADCSRA, ADIF ); // restart adc
@@ -49,7 +48,7 @@ void MicrophoneClass::sampleOnce() {
 }
 
 
-void MicrophoneClass::sendData() {
+void SensorMIC::sendData() {
 	uint32_t sampleTime = millis() - samplingStarted;
 
 	float volAvgPtc = 100 * ( (float) soundVolAcc / samples ) / HIGHEST_AMPLITUDE;
@@ -64,13 +63,13 @@ void MicrophoneClass::sendData() {
 	LOG_DEBUG( "MIC", "Samples = " << samples );
 
 	LOG_INFO( "MIC", "Avg = " << volAvgPtc << " %" );
-	spi.send( 'V', &volAvgPtc, sizeof( volAvgPtc ) );
+	i2c.send( 'V', volAvgPtc );
 
 	LOG_INFO( "MIC", "Max = " << volMaxPtc << " %" );
-	spi.send( 'M', &volMaxPtc, sizeof( volMaxPtc ) );
+	i2c.send( 'M', volMaxPtc );
 
 	LOG_INFO( "MIC", "RMS = " << volRmsPtc << " %");
-	spi.send( 'R', &volRmsPtc, sizeof( volRmsPtc ) );
+	i2c.send( 'R', volRmsPtc );
 
 
 	// Reset statistic to start all over

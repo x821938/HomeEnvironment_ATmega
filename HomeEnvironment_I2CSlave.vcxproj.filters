@@ -15,52 +15,39 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.md" />
-    <None Include="HomeEnvironment_ATmega.ino" />
+    <None Include="HomeEnvironment_I2CSlave.ino" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="__vm\.HomeEnvironment_I2CSlave.vsarduino.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Microphone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="i2c.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DustSensor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DHTSensor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Logging.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Timing.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="__vm\.HomeEnvironment_ATmega.vsarduino.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="I2C.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SensorPPD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SensorMIC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SensorMHZ.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SensorDHT.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Timing.cpp">
+    <ClCompile Include="Microphone.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="I2C.cpp">
+    <ClCompile Include="i2c.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SensorPPD.cpp">
+    <ClCompile Include="DustSensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SensorMIC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SensorMHZ.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SensorDHT.cpp">
+    <ClCompile Include="DHTSensor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

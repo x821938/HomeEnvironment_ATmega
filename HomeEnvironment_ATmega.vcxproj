@@ -64,7 +64,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\libraries\DHT_sensor_library;$(ProjectDir)..\libraries\Adafruit_Unified_Sensor;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\hardware\avr\1.6.18\libraries\SoftwareSerial\src;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\hardware\avr\1.6.18\libraries\SPI\src;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\libraries;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\hardware\avr\1.6.18\libraries;$(ProjectDir)..\libraries;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\hardware\avr\1.6.18\cores\arduino;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\hardware\avr\1.6.18\variants\eightanaloginputs;$(ProjectDir)..\HomeEnvironment_ATmega;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\tools\avr-gcc\4.9.2-atmel3.5.4-arduino2\avr\include\;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\tools\avr-gcc\4.9.2-atmel3.5.4-arduino2\avr\include\avr\;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\tools\avr-gcc\4.9.2-atmel3.5.4-arduino2\lib\gcc\avr\4.8.1\include;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\tools\avr-gcc\4.9.2-atmel3.5.4-arduino2\lib\gcc\avr\4.9.2\include;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\tools\avr-gcc\4.9.2-atmel3.5.4-arduino2\lib\gcc\avr\4.9.3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\hardware\avr\1.6.18\libraries\Wire\src;$(ProjectDir)..\libraries\DHT_sensor_library;$(ProjectDir)..\libraries\Adafruit_Unified_Sensor;$(ProjectDir)..\libraries\AltSoftSerial;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\hardware\avr\1.6.18\libraries\Wire\src\utility;$(ProjectDir)..\..\..\..\..\Program Files (x86)\Arduino\libraries;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\hardware\avr\1.6.18\libraries;$(ProjectDir)..\libraries;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\hardware\avr\1.6.18\cores\arduino;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\hardware\avr\1.6.18\variants\eightanaloginputs;$(ProjectDir)..\HomeEnvironment_ATmega;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\tools\avr-gcc\4.9.2-atmel3.5.4-arduino2\avr\include\;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\tools\avr-gcc\4.9.2-atmel3.5.4-arduino2\avr\include\avr\;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\tools\avr-gcc\4.9.2-atmel3.5.4-arduino2\lib\gcc\avr\4.8.1\include;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\tools\avr-gcc\4.9.2-atmel3.5.4-arduino2\lib\gcc\avr\4.9.2\include;$(ProjectDir)..\..\..\AppData\Local\arduino15\packages\arduino\tools\avr-gcc\4.9.2-atmel3.5.4-arduino2\lib\gcc\avr\4.9.3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)__vm\.HomeEnvironment_ATmega.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <PreprocessorDefinitions>__AVR_ATmega328p__;__AVR_ATmega328P__;F_CPU=8000000L;ARDUINO=10801;ARDUINO_AVR_PRO;ARDUINO_ARCH_AVR;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -85,21 +85,21 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DHTSensor.h" />
-    <ClInclude Include="MHZSensor.h" />
-    <ClInclude Include="PPDSensor.h" />
+    <ClInclude Include="SensorDHT.h" />
+    <ClInclude Include="I2C.h" />
+    <ClInclude Include="SensorMHZ.h" />
+    <ClInclude Include="SensorMIC.h" />
+    <ClInclude Include="SensorPPD.h" />
     <ClInclude Include="Logging.h" />
-    <ClInclude Include="Microphone.h" />
-    <ClInclude Include="SPImaster.h" />
     <ClInclude Include="Timing.h" />
     <ClInclude Include="__vm\.HomeEnvironment_ATmega.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DHTSensor.cpp" />
-    <ClCompile Include="MHZSensor.cpp" />
-    <ClCompile Include="PPDSensor.cpp" />
-    <ClCompile Include="Microphone.cpp" />
-    <ClCompile Include="SPImaster.cpp" />
+    <ClCompile Include="SensorDHT.cpp" />
+    <ClCompile Include="I2C.cpp" />
+    <ClCompile Include="SensorMHZ.cpp" />
+    <ClCompile Include="SensorMIC.cpp" />
+    <ClCompile Include="SensorPPD.cpp" />
     <ClCompile Include="Timing.cpp" />
   </ItemGroup>
   <PropertyGroup>
