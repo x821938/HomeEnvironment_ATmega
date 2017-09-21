@@ -3,8 +3,6 @@
 
 #include "Timing.h"
 
-#define MHZ_TX_PIN 6
-#define MHZ_RX_PIN 7
 #define MHZ_WARMUP_TIME 180
 
 
