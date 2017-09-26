@@ -6,11 +6,11 @@
 
 class Timing {
 protected:
-	long _triggerFreq;
-	long lastTriggered;
+	unsigned long _triggerFreq;
+	unsigned long lastTriggered;
 
 public:
-	void setup( long triggerFreq );
+	void setup( unsigned long triggerFreq );
 	bool triggered();
 };
 

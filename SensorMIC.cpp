@@ -7,21 +7,26 @@ extern I2C i2c;
 
 void SensorMIC::setup( uint16_t sampleTime ) {
 	isSetup = true;
-	sampleTimer.setup( (long)sampleTime * 1000 );
+	sampleTimer.setup( (unsigned long)sampleTime * 1000 );
 
 	ADCSRA = 0xe0 + 7; // "ADC Enable", "ADC Start Conversion", "ADC Auto Trigger Enable" and divider.
 	sbi( ADCSRA, ADPS2 ); cbi( ADCSRA, ADPS1 ); sbi( ADCSRA, ADPS0 ); // my board runs at 8mhz. prescaler 32=19200 samples/sek instead of 128=4800 samples/sek.
 	ADMUX |= 0x40; // Use Vcc for analog reference.
 	DIDR0 = 0x01; // turn off the digital input for adc0
+
+	newSample(); // Reset statistics so we start from clean.
+
+	// We connect the microphone to an output pin to ensure it doesn't get noice. Here we power it on.
+	pinMode( MIC_POWER_PIN, OUTPUT );
+	digitalWrite( MIC_POWER_PIN, HIGH );
+
 	LOG_NOTICE( "MIC", "ADC is now setup for microphone on pin A0" );
-	samplingStarted = millis();
 }
 
 
 void SensorMIC::handle() {
 	if ( isSetup ) {
 		// all samples must be taken right after each other, this is why nothing else can take place in the meantime
-		lastMeasured = millis();
 		LOG_DEBUG( "MIC", "Starting microphone sampling - doing only this" );
 		while ( !sampleTimer.triggered() ) {
 			sampleOnce();
@@ -30,6 +35,12 @@ void SensorMIC::handle() {
 	}
 }
 
+
+void SensorMIC::newSample() {
+	soundVolMax = soundVolAcc = soundVolRMS = 0;
+	samples = 0;
+	samplingStarted = millis();
+}
 
 void SensorMIC::sampleOnce() {
 	// Hardware read A0, bitbanging for faster read that ReadAnalog
@@ -62,18 +73,26 @@ void SensorMIC::sendData() {
 	LOG_DEBUG( "MIC", "Sample time = " << sampleTime << " ms");
 	LOG_DEBUG( "MIC", "Samples = " << samples );
 
-	LOG_INFO( "MIC", "Avg = " << volAvgPtc << " %" );
-	i2c.send( 'V', volAvgPtc );
+	if ( volAvgPtc >= 0 && volAvgPtc <= 100 ) {
+		LOG_INFO( "MIC", "Avg = " << volAvgPtc << " %" );
+		i2c.send( 'V', volAvgPtc );
+	} else {
+		LOG_ERROR( "MIC", "Invalid Volume average" );
+	}
 
-	LOG_INFO( "MIC", "Max = " << volMaxPtc << " %" );
-	i2c.send( 'M', volMaxPtc );
+	if ( volMaxPtc >= 0 && volMaxPtc <= 100 ) {
+		LOG_INFO( "MIC", "Max = " << volMaxPtc << " %" );
+		i2c.send( 'M', volMaxPtc );
+	} else {
+		LOG_ERROR( "MIC", "Invalid Volume Max" );
+	}
 
-	LOG_INFO( "MIC", "RMS = " << volRmsPtc << " %");
-	i2c.send( 'R', volRmsPtc );
+	if ( volRmsPtc >= 0 && volRmsPtc <= 100 ) {
+		LOG_INFO( "MIC", "RMS = " << volRmsPtc << " %" );
+		i2c.send( 'R', volRmsPtc );
+	} else {
+		LOG_ERROR( "MIC", "Invalid Volume RMS" );
+	}
 
-
-	// Reset statistic to start all over
-	soundVolMax = soundVolAcc = soundVolRMS = 0;
-	samples = 0;
-	samplingStarted = millis();
+	newSample(); // Reset statistic to start all over
 }

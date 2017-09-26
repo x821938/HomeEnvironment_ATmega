@@ -8,6 +8,7 @@
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit)) // low level set bit
 
 #define HIGHEST_AMPLITUDE (1024 / 2)
+#define MIC_POWER_PIN A1
 
 
 class SensorMIC
@@ -16,13 +17,13 @@ class SensorMIC
 		bool isSetup = false;
 		Timing sampleTimer;
 
-		long lastMeasured;
 		uint32_t samples = 0;
 		uint32_t samplingStarted = 0;
 		uint16_t soundVolMax = 0;
 		uint32_t soundVolAcc = 0;
 		uint64_t soundVolRMS = 0;
 
+		void newSample();
 		void sampleOnce();
 
 	public:

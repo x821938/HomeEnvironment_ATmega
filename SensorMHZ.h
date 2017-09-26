@@ -15,7 +15,7 @@ class SensorMHZ
 	 Timing sendTimer;
 	 Timing warmupTimer;
 
-	 long sensorStartedAt;
+	 unsigned long sensorStartedAt;
 	 void sendData();
 
  public:

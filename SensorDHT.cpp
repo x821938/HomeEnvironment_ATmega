@@ -9,7 +9,7 @@ DHT dht( DHT_PIN, DHT22 );
 
 void SensorDHT::setup( uint16_t measureFreq ) {
 	isSetup = true;
-	sendTimer.setup( (long) measureFreq * 1000 );
+	sendTimer.setup( (unsigned long) measureFreq * 1000 );
 
 	dht.begin();
 	LOG_NOTICE( "DHT", "Sensor started" );

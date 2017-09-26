@@ -7,7 +7,7 @@ extern I2C i2c;
 
 void SensorPPD::setup( uint16_t measureFreq ) {
 	isSetup = true;
-	sendTimer.setup( (long)measureFreq * 1000 ); 
+	sendTimer.setup( (unsigned long)measureFreq * 1000 );
 
 	samplingStartedAt = millis();
 	lowDuration = 0;
@@ -24,7 +24,7 @@ void SensorPPD::handle() {
 
 
 void SensorPPD::particleCountIsr() {
-	volatile static long goingLowAt = millis();
+	volatile static unsigned long goingLowAt = millis();
 	volatile static bool lastPinValue = true;
 
 	bool pinValue = ( digitalRead( SENSOR_PIN ) == HIGH );

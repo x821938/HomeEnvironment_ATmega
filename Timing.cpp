@@ -1,7 +1,7 @@
 #include "Timing.h"
 
 
-void Timing::setup( long triggerFreq ) {
+void Timing::setup( unsigned long triggerFreq ) {
 	_triggerFreq = triggerFreq;
 	lastTriggered = millis();
 }

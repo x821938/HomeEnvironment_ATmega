@@ -6,15 +6,15 @@
 #define SENSOR_PIN 3
 
 
-static volatile long lowDuration=0; // ISR stuff has to be global.
+static volatile unsigned long lowDuration=0; // ISR stuff has to be global.
 
 class SensorPPD {
 	protected:
 		bool isSetup = false;
 		Timing sendTimer;
 
-		long sampleTime;
-		long samplingStartedAt;
+		unsigned long sampleTime;
+		unsigned long samplingStartedAt;
 
 		static void particleCountIsr();
 		void sendData();

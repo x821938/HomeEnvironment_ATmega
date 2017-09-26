@@ -12,8 +12,8 @@ void SensorMHZ::setup( uint16_t measureFreq ) {
 	isSetup = true;
 	warmedUp = false;
 
-	sendTimer.setup( (long)measureFreq * 1000 );
-	warmupTimer.setup( (long)MHZ_WARMUP_TIME * 1000 );
+	sendTimer.setup( (unsigned long)measureFreq * 1000 );
+	warmupTimer.setup( (unsigned long)MHZ_WARMUP_TIME * 1000 );
 
 	swSerial.begin( 9600 );
 	sensorStartedAt = millis();
