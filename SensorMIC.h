@@ -9,27 +9,43 @@
 
 #define HIGHEST_AMPLITUDE (1024 / 2)
 #define MIC_POWER_PIN A1
+#define MIC_SAMPLE_TIME 100UL
+
 
 
 class SensorMIC
 {
 	protected:
 		bool isSetup = false;
-		Timing sampleTimer;
 
+		bool prevCollectData = false;
+
+		Timing sampleTimer;
 		uint32_t samples = 0;
 		uint32_t samplingStarted = 0;
+
 		uint16_t soundVolMax = 0;
 		uint32_t soundVolAcc = 0;
 		uint64_t soundVolRMS = 0;
 
+		float accVolPtc=0;
+		float accMaxPtc=0;
+		float accRmsPtc=0;
+		uint32_t accCount=0;
+
 		void newSample();
 		void sampleOnce();
 
+		void resetAccumulation();
+		void accumulateData();
+
 	public:
-		void setup( uint16_t sampleTime );
+		void setup();
 		void handle();
-		void sendData();
+		float getAvgPtc();
+		float getMaxPtc();
+		float getRmsPtc();
 };
+
 
 #endif

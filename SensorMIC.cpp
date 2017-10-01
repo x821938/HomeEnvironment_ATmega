@@ -1,20 +1,25 @@
 #include "SensorMIC.h"
 #include "Logging.h"
-#include "I2C.h"
-
-extern I2C i2c;
 
 
-void SensorMIC::setup( uint16_t sampleTime ) {
+extern volatile bool collectData;
+
+
+
+/* Sets up ADC (input A0) for free running mode.
+   Reset statistics and turns on the microphone. It's feeded on an output pin to reduce supply noise */
+void SensorMIC::setup() {
 	isSetup = true;
-	sampleTimer.setup( (unsigned long)sampleTime * 1000 );
+	sampleTimer.setup(MIC_SAMPLE_TIME);
 
 	ADCSRA = 0xe0 + 7; // "ADC Enable", "ADC Start Conversion", "ADC Auto Trigger Enable" and divider.
 	sbi( ADCSRA, ADPS2 ); cbi( ADCSRA, ADPS1 ); sbi( ADCSRA, ADPS0 ); // my board runs at 8mhz. prescaler 32=19200 samples/sek instead of 128=4800 samples/sek.
 	ADMUX |= 0x40; // Use Vcc for analog reference.
 	DIDR0 = 0x01; // turn off the digital input for adc0
 
-	newSample(); // Reset statistics so we start from clean.
+	// Reset statistics so we start from clean.
+	newSample(); 
+	resetAccumulation();
 
 	// We connect the microphone to an output pin to ensure it doesn't get noice. Here we power it on.
 	pinMode( MIC_POWER_PIN, OUTPUT );
@@ -24,24 +29,37 @@ void SensorMIC::setup( uint16_t sampleTime ) {
 }
 
 
+
+/* Should be called frequently. If allowed to collect data, it will do a lot of continious samples.
+   Nothing else is allowed to run when this is happening - it affects the readings.
+   When we have 100ms of readings (about 1900 samples) they are accummulated */
 void SensorMIC::handle() {
 	if ( isSetup ) {
-		// all samples must be taken right after each other, this is why nothing else can take place in the meantime
-		LOG_DEBUG( "MIC", "Starting microphone sampling - doing only this" );
-		while ( !sampleTimer.triggered() ) {
-			sampleOnce();
+		if ( prevCollectData == false && collectData == true ) resetAccumulation();
+		if ( collectData ) {
+			newSample();
+			// all samples must be taken right after each other, this is why nothing else can take place in the meantime
+			while ( collectData && !sampleTimer.triggered() ) {
+				sampleOnce();
+			}
+			accumulateData();
 		}
-		sendData();
+		prevCollectData = collectData;
 	}
 }
 
 
+
+/* Reset stats for the next 100ms samples */
 void SensorMIC::newSample() {
+	//LOG_DEBUG( "MIC", "Starting microphone sampling - doing only this" );
 	soundVolMax = soundVolAcc = soundVolRMS = 0;
 	samples = 0;
 	samplingStarted = millis();
 }
 
+
+/* Do one sampling */
 void SensorMIC::sampleOnce() {
 	// Hardware read A0, bitbanging for faster read that ReadAnalog
 	while ( !( ADCSRA & /*0x10*/_BV( ADIF ) ) ); // wait for adc to be ready (ADIF)
@@ -59,40 +77,57 @@ void SensorMIC::sampleOnce() {
 }
 
 
-void SensorMIC::sendData() {
-	uint32_t sampleTime = millis() - samplingStarted;
 
-	float volAvgPtc = 100 * ( (float) soundVolAcc / samples ) / HIGHEST_AMPLITUDE;
-	float volMaxPtc = 100 * (float) soundVolMax / HIGHEST_AMPLITUDE;
+/* After the master has pulled data then we reset the overall accumulated data */
+void SensorMIC::resetAccumulation() {
+	accVolPtc = accMaxPtc = accRmsPtc = accCount = 0;
+	sampleTimer.reset();
+}
 
-	// RMS calculation
-	float soundVolRMSflt = sqrt( soundVolRMS / samples );
-	float soundVolRMSfltPtc = 100 * soundVolRMSflt / HIGHEST_AMPLITUDE;
-	float volRmsPtc = 10 * soundVolRMSflt / 7;
 
-	LOG_DEBUG( "MIC", "Sample time = " << sampleTime << " ms");
-	LOG_DEBUG( "MIC", "Samples = " << samples );
 
-	if ( volAvgPtc >= 0 && volAvgPtc <= 100 ) {
-		LOG_INFO( "MIC", "Avg = " << volAvgPtc << " %" );
-		i2c.send( 'V', volAvgPtc );
-	} else {
-		LOG_ERROR( "MIC", "Invalid Volume average" );
+/* Each 100ms sample is calculated and accumulated */
+void SensorMIC::accumulateData() {
+	if ( samples > 0 ) {
+		uint32_t sampleTime = millis() - samplingStarted;
+
+		float volAvgPtc = 100 * ( (float) soundVolAcc / samples ) / HIGHEST_AMPLITUDE;
+		float volMaxPtc = 100 * (float) soundVolMax / HIGHEST_AMPLITUDE;
+
+		float soundVolRMSflt = sqrt( soundVolRMS / samples );
+		float soundVolRMSfltPtc = 100 * soundVolRMSflt / HIGHEST_AMPLITUDE;
+		float volRmsPtc = 10 * soundVolRMSflt / 7;
+
+		accVolPtc = accVolPtc + volAvgPtc;
+		accRmsPtc = accRmsPtc + volRmsPtc;
+		accMaxPtc = max( accMaxPtc, volMaxPtc );
+		accCount++;
 	}
+}
 
-	if ( volMaxPtc >= 0 && volMaxPtc <= 100 ) {
-		LOG_INFO( "MIC", "Max = " << volMaxPtc << " %" );
-		i2c.send( 'M', volMaxPtc );
-	} else {
-		LOG_ERROR( "MIC", "Invalid Volume Max" );
-	}
 
-	if ( volRmsPtc >= 0 && volRmsPtc <= 100 ) {
-		LOG_INFO( "MIC", "RMS = " << volRmsPtc << " %" );
-		i2c.send( 'R', volRmsPtc );
-	} else {
-		LOG_ERROR( "MIC", "Invalid Volume RMS" );
-	}
 
-	newSample(); // Reset statistic to start all over
+/* Returns the average volume percentage */
+float SensorMIC::getAvgPtc() {
+	if ( accCount > 0 ) {
+		return accVolPtc / accCount;
+	} else return 0;
+}
+
+
+
+/* Returns the maximum volume percentage */
+float SensorMIC::getMaxPtc() {
+	if ( accCount > 0 ) {
+		return accMaxPtc;
+	} else return 0;
+}
+
+
+
+/* Returns the average rms volume percentage. This is weightet more towards the loud sounds */
+float SensorMIC::getRmsPtc() {
+	if ( accCount > 0 ) {
+		return accRmsPtc / accCount;
+	} else return 0;
 }

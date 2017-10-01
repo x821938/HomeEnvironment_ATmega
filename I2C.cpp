@@ -1,56 +1,110 @@
 #include "i2c.h"
 #include "Logging.h"
+#include "SensorMIC.h"
+#include "SensorPPD.h"
+#include "SensorDHT.h"
+#include "SensorPIR.h"
 #include <Wire.h>
 
+extern SensorMIC sensorMIC;
+extern SensorDHT sensorDHT;
+extern SensorPPD sensorPPD;
+extern SensorPIR sensorPIR;
+
+extern I2C i2c;
 
 
+
+/* Registrers handlser for I2C communication */
 void I2C::setup() {
-	pinMode( STATUS_LED_PIN, OUTPUT );
-	digitalWrite( STATUS_LED_PIN, LOW );
-
-	pinMode( GOT_DATA_PIN, OUTPUT );
-	digitalWrite( GOT_DATA_PIN, LOW );
-
 	Wire.begin( I2C_ADDRESS );
 	Wire.onRequest( this->I2C_RequestEvent ); // data request from master to slave(me). He wants data
+	Wire.onReceive( this->I2C_ReceiveEvent );// data from master to slave(me). 
 	LOG_INFO( "I2C", "Now listening for bus events" );
 }
 
 
-void I2C::send( const char dataType, float data ) {
-	i2cFrame.dataType = dataType;
-	i2cFrame.data = data;
-	i2cDataIsSent = false;
-	LOG_DEBUG( "I2C", "Waiting for master to pull our data" );
-	digitalWrite( STATUS_LED_PIN, HIGH );
-	digitalWrite( GOT_DATA_PIN, HIGH ); // Tell the esp that we want to send data
-	while ( !i2cDataIsSent ); // Wait until master as eaten our data.
-	digitalWrite( STATUS_LED_PIN, LOW );
+
+/* Reads one incoming byte from master and stores it for later use.
+   This is for us to know what to give our beloved master */
+void I2C::I2C_ReceiveEvent( int howMany ) {
+	while ( 0 < Wire.available() ) {
+		byte rx = Wire.read();
+		I2C_RecievedQuestion = rx;
+		LOG_DEBUG( "I2C", "Recieved command: " << (char) rx );
+	}
 }
 
 
+
+/* Depending on the previously received command we now give the master it's data */
 void I2C::I2C_RequestEvent() {
-	
-	digitalWrite( GOT_DATA_PIN, LOW ); // Now esp is reading our data, we lower the flag.
+	float sendValue;
 
-	Wire.write( (uint8_t*) &i2cFrame, sizeof( i2cFrame ) );
-	i2cDataIsSent = true;
-
-	hexDebug( &i2cFrame, sizeof( i2cFrame ), "Sent" );
+	// respond to the stored question
+	switch ( I2C_RecievedQuestion ) {
+		case 'M':
+			sendValue = sensorMIC.getMaxPtc();
+			LOG_INFO( "I2C", "Sending max volume of " << sendValue << "%" );
+			sendData( &sendValue, sizeof( sendValue ) );
+			break;
+		case 'A': 
+			sendValue = sensorMIC.getAvgPtc();
+			LOG_INFO( "I2C", "Sending avarage volume of " << sendValue << "%" );
+			sendData( &sendValue, sizeof( sendValue ) );
+			break;
+		case 'R':
+			sendValue = sensorMIC.getRmsPtc();
+			LOG_INFO( "I2C", "Sending RMS volume of " << sendValue << "%" );
+			sendData( &sendValue, sizeof( sendValue ) );
+			break;
+		case 'D':
+			sendValue = sensorPPD.getConcentration();
+			LOG_INFO( "I2C", "Sending dust concentration of " << sendValue << "pcs/l" );
+			sendData( &sendValue, sizeof( sendValue ) );
+			break;
+		case 'T':
+			sendValue = sensorDHT.getTemperature();
+			LOG_INFO( "I2C", "Sending temperature of " << sendValue << "C" );
+			sendData( &sendValue, sizeof( sendValue ) );
+			break;
+		case 'H':
+			sendValue = sensorDHT.getHumidity();
+			LOG_INFO( "I2C", "Sending humidity of " << sendValue << "%" );
+			sendData( &sendValue, sizeof( sendValue ) );
+			break;
+		case 'S':
+			sendValue = sensorPIR.getMotionPtc();
+			LOG_INFO( "I2C", "Sending motion time of " << sendValue << "%" );
+			sendData( &sendValue, sizeof( sendValue ) );
+			break;
+		case 'U':
+			sendValue = millis() / ( 1000.0 * 60.0 );
+			LOG_INFO( "I2C", "Sending uptime of " << sendValue << "min" );
+			sendData( &sendValue, sizeof( sendValue ) );
+			break;
+		default:
+			LOG_ERROR( "I2C", "Wrong command" );
+			break;
+	}
 }
 
 
-void I2C::hexDebug( const void* var, const uint8_t varSize, const char* msg ) {
-	String hexString;
-	for ( uint8_t i = 0; i < varSize; i++ ) { // traverse the var byte by byte
+
+/* Sends a variable via I2C. Most is this method is delicious hex logging */
+void I2C::sendData( const void* var, const uint8_t size ) {
+	String hexString; // This is the debug hex string we will spit out in the end
+
+	for ( uint8_t i = 0; i < size; i++ ) { // Traverse provided var byte by byte
 		char* p = (char *) var;
 
-		uint8_t currentByte = *( p + i ); // get byte number i
+		uint8_t currentByte = *( p + i );
 		char currentByteHex[3];
-		sprintf( currentByteHex, "%02X", currentByte ); // convert it to hex
-		hexString = hexString + currentByteHex; // and concatenate it into a printable string of all bytes
+		sprintf( currentByteHex, "%02X", currentByte ); // And convert it to hex
+		hexString = hexString + currentByteHex;
 
-		if ( i != varSize - 1 ) hexString = hexString + ",";
+		if ( i != size - 1 ) hexString = hexString + ",";
 	}
-	LOG_DEBUG( "I2C", msg << " " << varSize << " bytes in hex: " << hexString );
+	LOG_DEBUG( "I2C", "Sending bytes : " << hexString );
+	Wire.write( (uint8_t*) var, size );
 }

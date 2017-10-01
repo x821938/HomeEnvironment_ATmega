@@ -37,10 +37,10 @@
     <ClInclude Include="SensorMIC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SensorMHZ.h">
+    <ClInclude Include="SensorDHT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SensorDHT.h">
+    <ClInclude Include="SensorPIR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -57,10 +57,10 @@
     <ClCompile Include="SensorMIC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SensorMHZ.cpp">
+    <ClCompile Include="SensorDHT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SensorDHT.cpp">
+    <ClCompile Include="SensorPIR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

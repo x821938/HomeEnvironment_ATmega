@@ -4,20 +4,33 @@
 #include "Timing.h"
 
 #define DHT_PIN 4
+#define DHT_MEASURE_FREQ 15000UL
+
 
 
 class SensorDHT
 {
 	 protected:
-		 bool isSetup = false;
-		 Timing sendTimer;
+		bool isSetup = false;
 
-		 void sendData();
+		Timing meassureTimer;
+		bool prevCollectData = false;
+		 
+		float accTemp;
+		float accHum;
+		uint16_t accTempCount = 0;
+		uint16_t accHumCount = 0;
 
-	 public:
-		 void setup( uint16_t measureFreq );
-		 void handle();
+		void resetAccumulation();
+		void accumulateData();
+
+	public:
+		void setup();
+		void handle();
+		float getTemperature();
+		float getHumidity();
+
 };
 
-#endif
 
+#endif

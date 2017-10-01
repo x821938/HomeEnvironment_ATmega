@@ -3,28 +3,20 @@
 
 #include <Arduino.h>
 
-#define I2C_ADDRESS 8
-#define STATUS_LED_PIN SCK
-#define GOT_DATA_PIN 2
+#define I2C_ADDRESS 8	// Our I2C slave eaddress
+static volatile char I2C_RecievedQuestion; // ISR stuff has to be global
 
-struct I2Cframe {
-	float data;
-	char dataType;
-};
-
-static volatile bool i2cDataIsSent;
-static volatile I2Cframe i2cFrame;
 
 
 class I2C {
+	protected:
+		static void I2C_ReceiveEvent( int howMany );
+		static void I2C_RequestEvent();
 
-protected:
-	static void I2C_RequestEvent();
-	static void hexDebug( const void * var, const uint8_t varSize, const char * msg );
-
-public:
-	void setup();
-	void send( const char dataType, float data );
+	public:
+		void setup();
+		static void sendData( const void* var, const uint8_t size );
 };
+
 
 #endif
