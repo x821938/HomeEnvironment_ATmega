@@ -2,9 +2,6 @@
 #include "Logging.h"
 
 
-extern volatile bool collectData;
-
-
 
 /* Sets up ADC (input A0) for free running mode.
    Reset statistics and turns on the microphone. It's feeded on an output pin to reduce supply noise */
@@ -19,38 +16,34 @@ void SensorMIC::setup() {
 
 	// Reset statistics so we start from clean.
 	newSample(); 
-	resetAccumulation();
+	newMeasurement();
 
 	// We connect the microphone to an output pin to ensure it doesn't get noice. Here we power it on.
 	pinMode( MIC_POWER_PIN, OUTPUT );
 	digitalWrite( MIC_POWER_PIN, HIGH );
 
-	LOG_NOTICE( "MIC", "ADC is now setup for microphone on pin A0" );
+	LOG_INFO( "MIC", "ADC is now setup for microphone on pin A0" );
 }
 
 
 
 /* Should be called frequently. If allowed to collect data, it will do a lot of continious samples.
    Nothing else is allowed to run when this is happening - it affects the readings.
-   When we have 100ms of readings (about 1900 samples) they are accummulated */
+   When we have 1000ms of readings (about 19000 samples) they are accummulated */
 void SensorMIC::handle() {
 	if ( isSetup ) {
-		if ( prevCollectData == false && collectData == true ) resetAccumulation();
-		if ( collectData ) {
-			newSample();
-			// all samples must be taken right after each other, this is why nothing else can take place in the meantime
-			while ( collectData && !sampleTimer.triggered() ) {
-				sampleOnce();
-			}
-			accumulateData();
+		newSample();
+		// all samples must be taken right after each other, this is why nothing else can take place in the meantime
+		while ( !sampleTimer.triggered() ) {
+			sampleOnce();
 		}
-		prevCollectData = collectData;
+		accumulateData();
 	}
 }
 
 
 
-/* Reset stats for the next 100ms samples */
+/* Reset stats for the next 1000ms samples */
 void SensorMIC::newSample() {
 	//LOG_DEBUG( "MIC", "Starting microphone sampling - doing only this" );
 	soundVolMax = soundVolAcc = soundVolRMS = 0;
@@ -79,7 +72,7 @@ void SensorMIC::sampleOnce() {
 
 
 /* After the master has pulled data then we reset the overall accumulated data */
-void SensorMIC::resetAccumulation() {
+void SensorMIC::newMeasurement() {
 	accVolPtc = accMaxPtc = accRmsPtc = accCount = 0;
 	sampleTimer.reset();
 }
@@ -98,10 +91,16 @@ void SensorMIC::accumulateData() {
 		float soundVolRMSfltPtc = 100 * soundVolRMSflt / HIGHEST_AMPLITUDE;
 		float volRmsPtc = 10 * soundVolRMSflt / 7;
 
-		accVolPtc = accVolPtc + volAvgPtc;
-		accRmsPtc = accRmsPtc + volRmsPtc;
-		accMaxPtc = max( accMaxPtc, volMaxPtc );
-		accCount++;
+		if ( volMaxPtc >= 49.7 && volMaxPtc <= 50.1 ) { 
+			// These seems to appear when a lot of serial communication is going on. Decrease loglevel to 5 or less avoid this
+			LOG_ERROR( "MIC", "Spurious reading removed: max=" << volMaxPtc << "%" );
+		} else {
+			LOG_DEBUG( "MIC", "Avg=" << volAvgPtc << "% Rms=" << volRmsPtc << "% Max=" << volMaxPtc << "%" );
+			accVolPtc = accVolPtc + volAvgPtc;
+			accRmsPtc = accRmsPtc + volRmsPtc;
+			accMaxPtc = max( accMaxPtc, volMaxPtc );
+			accCount++;
+		}
 	}
 }
 

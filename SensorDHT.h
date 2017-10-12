@@ -14,14 +14,12 @@ class SensorDHT
 		bool isSetup = false;
 
 		Timing meassureTimer;
-		bool prevCollectData = false;
 		 
 		float accTemp;
 		float accHum;
 		uint16_t accTempCount = 0;
 		uint16_t accHumCount = 0;
 
-		void resetAccumulation();
 		void accumulateData();
 
 	public:
@@ -29,7 +27,7 @@ class SensorDHT
 		void handle();
 		float getTemperature();
 		float getHumidity();
-
+		void newMeasurement();
 };
 
 

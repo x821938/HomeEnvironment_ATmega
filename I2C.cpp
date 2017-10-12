@@ -13,6 +13,9 @@ extern SensorPIR sensorPIR;
 
 extern I2C i2c;
 
+bool I2C::justBooted = true;
+bool I2C::masterReportedFinished = false;
+
 
 
 /* Registrers handlser for I2C communication */
@@ -45,48 +48,68 @@ void I2C::I2C_RequestEvent() {
 	switch ( I2C_RecievedQuestion ) {
 		case 'M':
 			sendValue = sensorMIC.getMaxPtc();
-			LOG_INFO( "I2C", "Sending max volume of " << sendValue << "%" );
+			LOG_NOTICE( "I2C", "Sending max volume of " << sendValue << "%" );
 			sendData( &sendValue, sizeof( sendValue ) );
 			break;
 		case 'A': 
 			sendValue = sensorMIC.getAvgPtc();
-			LOG_INFO( "I2C", "Sending avarage volume of " << sendValue << "%" );
+			LOG_NOTICE( "I2C", "Sending avarage volume of " << sendValue << "%" );
 			sendData( &sendValue, sizeof( sendValue ) );
 			break;
 		case 'R':
 			sendValue = sensorMIC.getRmsPtc();
-			LOG_INFO( "I2C", "Sending RMS volume of " << sendValue << "%" );
+			LOG_NOTICE( "I2C", "Sending RMS volume of " << sendValue << "%" );
 			sendData( &sendValue, sizeof( sendValue ) );
 			break;
 		case 'D':
 			sendValue = sensorPPD.getConcentration();
-			LOG_INFO( "I2C", "Sending dust concentration of " << sendValue << "pcs/l" );
+			LOG_NOTICE( "I2C", "Sending dust concentration of " << sendValue << "pcs/l" );
 			sendData( &sendValue, sizeof( sendValue ) );
 			break;
 		case 'T':
 			sendValue = sensorDHT.getTemperature();
-			LOG_INFO( "I2C", "Sending temperature of " << sendValue << "C" );
+			LOG_NOTICE( "I2C", "Sending temperature of " << sendValue << "C" );
 			sendData( &sendValue, sizeof( sendValue ) );
 			break;
 		case 'H':
 			sendValue = sensorDHT.getHumidity();
-			LOG_INFO( "I2C", "Sending humidity of " << sendValue << "%" );
+			LOG_NOTICE( "I2C", "Sending humidity of " << sendValue << "%" );
 			sendData( &sendValue, sizeof( sendValue ) );
 			break;
 		case 'S':
 			sendValue = sensorPIR.getMotionPtc();
-			LOG_INFO( "I2C", "Sending motion time of " << sendValue << "%" );
+			LOG_NOTICE( "I2C", "Sending motion time of " << sendValue << "%" );
 			sendData( &sendValue, sizeof( sendValue ) );
 			break;
 		case 'U':
 			sendValue = millis() / ( 1000.0 * 60.0 );
-			LOG_INFO( "I2C", "Sending uptime of " << sendValue << "min" );
+			LOG_NOTICE( "I2C", "Sending uptime of " << sendValue << "min" );
 			sendData( &sendValue, sizeof( sendValue ) );
+			break;
+		case 'Z':
+			sendValue = 0;
+			LOG_NOTICE( "I2C", "Master is finished with us" );
+			sendData( &sendValue, sizeof( sendValue ) );
+			masterReportedFinished = true;
+			break;
+		case 'B':
+			sendValue = justBooted;
+			LOG_NOTICE( "I2C", "Sending just booted = " << sendValue );
+			sendData( &sendValue, sizeof( sendValue ) );
+			justBooted = false;
 			break;
 		default:
 			LOG_ERROR( "I2C", "Wrong command" );
 			break;
 	}
+}
+
+
+
+bool I2C::isMasterFinished() {
+	bool finished = masterReportedFinished;
+	masterReportedFinished = false;
+	return finished;
 }
 
 

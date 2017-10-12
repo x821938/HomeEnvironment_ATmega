@@ -3,7 +3,6 @@
 #include "DHT.h"
 
 DHT dht( DHT_PIN, DHT22 );
-extern volatile bool collectData;
 
 
 
@@ -11,10 +10,10 @@ extern volatile bool collectData;
 void SensorDHT::setup() {
 	isSetup = true;
 	meassureTimer.setup( DHT_MEASURE_FREQ );
-	resetAccumulation();
+	newMeasurement();
 
 	dht.begin();
-	LOG_NOTICE( "DHT", "Sensor started" );
+	LOG_INFO( "DHT", "Sensor started" );
 }
 
 
@@ -23,23 +22,21 @@ void SensorDHT::setup() {
    If we were just polled for data, we reset the accumulated data */
 void SensorDHT::handle() {
 	if ( isSetup ) {
-		if ( collectData && meassureTimer.triggered() ) accumulateData();
-		if ( prevCollectData == false && collectData == true ) resetAccumulation();
-		prevCollectData = collectData;
+		if ( meassureTimer.triggered() ) accumulateData();
 	}
 }
 
 
 
 /* Zeroes accumulated humidity and temperature */
-void SensorDHT::resetAccumulation() {
+void SensorDHT::newMeasurement() {
 	accTemp = accHum = accTempCount = accHumCount = 0;
 	meassureTimer.reset();
 }
 
 
 
-/* Reads temperature and hymidity. If there is valid values they are accumulated and counted */
+/* Reads temperature and humidity. If there is valid values they are accumulated and counted */
 void SensorDHT::accumulateData() {
 	float temperature = dht.readTemperature();
 	if ( isnan( temperature ) || temperature < -40 || temperature > 80 ) {

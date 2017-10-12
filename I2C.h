@@ -10,11 +10,15 @@ static volatile char I2C_RecievedQuestion; // ISR stuff has to be global
 
 class I2C {
 	protected:
+		static bool justBooted;
+		static bool masterReportedFinished;
+
 		static void I2C_ReceiveEvent( int howMany );
 		static void I2C_RequestEvent();
 
 	public:
 		void setup();
+		bool isMasterFinished();
 		static void sendData( const void* var, const uint8_t size );
 };
 
